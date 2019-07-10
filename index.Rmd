@@ -24,8 +24,8 @@ library(gridExtra)
 
 * Visual perception uses graphical space more efficiently than tabular data
 * Statistical models are easier to refute visually
-* Sam point 1
-* Sam point 2
+* The only useful graphics are ones that people look at
+* Speed to production
 
 # Spatial efficiency
 
@@ -455,8 +455,8 @@ tbl_residual_compare_all %>%
 
 * Visual perception uses graphical space more efficiently than tabular data
 * Statistical models are easier to refute visually
-* Sam point 1
-* Sam point 2
+* The only useful graphics are ones that people look at
+* Speed to production
 
 ## References
 
