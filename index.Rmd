@@ -14,10 +14,16 @@ knitr::opts_chunk$set(
   , warning = FALSE
   , message = FALSE
   , collapse = TRUE
+  , dev.args = list(type = "cairo") #creates better visuals than the default graphics device
 )
 
 library(tidyverse)
 library(gridExtra)
+library(Cairo)
+library(vroom)
+library(ggthemes)
+library(png)
+library(grid)
 ```
 
 ##
@@ -461,6 +467,142 @@ tbl_residual_compare_all %>%
 ## References
 
 * http://dicook.github.io/nullabor/index.html
+
+# Productivity
+
+1. Branding your data visualizations
+2. Producing graphs quickly
+3. 
+
+## Data visualization communicates your brand
+
+* Your customers and clients judge your product based on appearance
+* When writing a resume, professionalism matters
+
+
+## Default graphics
+
+```{r}
+iris %>% 
+  ggplot(aes(Sepal.Width, Sepal.Length, color = Species)) + 
+  geom_point()
+```
+
+
+
+## Professional graphics
+
+```{r}
+source("theme_soa.R")
+
+img <- readPNG("images/soa_logo.png")
+logo <- rasterGrob(img, interpolate = T)
+
+qplot(1:10, 1:10, geom = "blank") + 
+  annotation_custom(logo) 
+
+
+gg <- iris %>% 
+  ggplot(aes(Sepal.Width, Sepal.Length, color = Species)) + 
+  geom_point(size = 2) + 
+  theme_classic() + 
+  labs("") + 
+  theme(legend.position = "top") + 
+  xlab("X Label") + 
+  ylab("Y Label") +
+  theme_soa() + 
+  ggtitle("FivethirtyEight theme") + 
+  labs( subtitle = "Based on fivethirtyeight's theme \nfrom the 'ggthemes' package",
+        caption = "Copyright 2019 YourBrandName \nUsed without Permission") + 
+   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+
+gt <- ggplot_gtable(ggplot_build(gg))
+gt$layout$clip[gt$layout$name=="panel"] <- "off"
+grid.draw(gt)
+
+```
+
+## What should actuaries look for?
+
+* Readability
+* Honesty - it should be representative of the underlying data
+* Reference ASOP
+
+## Bad - Difficult to read
+
+* What are the units?
+* What are the X and Y axis?
+* What is the data source?
+
+
+```{r fig.height=4}
+readmissions <- read_csv("hospital_readmission_rates.csv", na = "Not Available")
+
+readmissions %>% 
+  ggplot(aes(`Number of Readmissions`)) + 
+  geom_histogram() +
+  ggtitle("Hospital Readmissions")
+```
+
+
+
+## Good example - easy to read
+
+* There are just over 2,000 hospitals with between 30 and 50 readmissions
+* There are 4,000 hospitals with between 10 and 30 
+
+```{r fig.height=4}
+readmissions %>% 
+  ggplot(aes(`Number of Readmissions`)) + 
+  geom_histogram(binwidth = 20, color = "Light Grey", size = 1.2) + 
+  xlim(0, 300) + 
+  theme_soa() + 
+  ggtitle("Distribution of Hospital Readmissions") + 
+  xlab("Number of Readmissions") + 
+  ylab("Number of Hospitals") + 
+  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
+        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
+   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) + 
+  scale_x_continuous(breaks = seq(10, 300, 20),minor_breaks = seq(0, 300, 10), limits = c(0, 300))
+```
+
+## Bad example - Excel mixed type graph
+
+* Which axis is the Actual and which is the Predicted?  
+* The blue bars take up more visual space than the lines, but both units are equally important
+* The lines do not even make sense because there is no continuous scale (States are not related to each other)
+
+![*Excel Mixed Type Graph*](images/excel_pivot_1.PNG)
+
+## Good example - box plot of AvE ratio
+
+```{r message = F, warning = F}
+readmissions %>% 
+  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
+  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
+  ggplot(aes(State, ave, fill = State)) + 
+  geom_boxplot(outlier.alpha = 0.2, alpha = 0.7) + 
+  coord_flip() + 
+  theme_soa() + 
+  ggtitle("Actual vs Expected Readmission Ratio") + 
+  ylab("Actual/Predicted") +
+  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
+        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
+  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+
+```
+
+
+## How to create graphics like this quickly
+
+Creating a graph is an assembly line
+
+1.  Get data in the right format
+2.  Explore an idea - Discovery is a spontaneous process
+3.  Plot a graph
+4.  Put it in front of people
+
+
 
 ## Where to find this
 
