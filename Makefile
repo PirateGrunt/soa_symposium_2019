@@ -1,13 +1,13 @@
 all:index.html
 
-data_files = 
-data_rda = $(addprefix data/, $(addsuffix .rda, $(data_files)))
+DATA_FILES = $(wildcard data/*.R)
+DATA_RDA = $(DATA_FILES:R=rda)
 
-index.html:index.Rmd ./css/revealOpts.css $(data_rda)
-	Rscript -e "rmarkdown::render('$<')"
-
-data/%.rda:%.R
+data/%.rda:data/%.R
 	Rscript -e "source('$<')"
+
+index.html:index.Rmd css/custom.css $(DATA_RDA) theme_soa.R
+	Rscript -e "rmarkdown::render('$<')"
 
 clean:
 	rm -rf data/*.rda
