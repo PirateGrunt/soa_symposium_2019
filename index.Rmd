@@ -341,7 +341,36 @@ plt_hist +
 
 Summary statistics are _always_ a reduction of information.
 
-Visualization presents (almost) _all_ of the data. The reductions are made with our eyes. 
+Visualization presents (almost) _all_ of the data. The reductions are made with our eyes.
+
+## {.center}
+
+- Potential complaint: 
+- Focus on visual design places undue emphasis on superfluous characteristics like color, font, etc.
+
+## {.center}
+
+What's the most important word in the text which follows?
+
+##
+
+The rate for territory X must be **increased** by 10.4%.
+
+## {.center}
+
+And this one?
+
+##
+
+The rate for **territory** X must be increased by 10.4%.
+
+## {.center}
+
+"Inessential" matters. Emphasis is an element of communication and therefore comprehension.
+
+## {.center .unprofessional}
+
+This year we expect to turn the corner on profitability.
 
 # Productivity
 

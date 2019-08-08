@@ -8,6 +8,12 @@ body {
   color: white; 
 }
 
+.reveal .unprofessional {
+  font-family: "Comic Sans MS", sans-serif;
+  color: white; 
+  font-size: 300% ;
+}
+
 .reveal h1,
 .reveal h2,
 .reveal h3,
