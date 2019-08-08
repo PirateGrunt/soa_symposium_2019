@@ -8,6 +8,8 @@ output:
     transition: none
     css: css/custom.css
     self_contained: yes
+    reveal_options:
+      slideNumber: true
 ---
 
 ```{r setup, include=FALSE}
@@ -16,6 +18,7 @@ knitr::opts_chunk$set(
   , warning = FALSE
   , message = FALSE
   , collapse = TRUE
+  , cache = TRUE
 )
 
 library(tidyverse)
