@@ -494,6 +494,32 @@ readmissions %>%
 
 </div>
 
+## Actual, expected -> x, y
+
+* When the model fits well lots of empty space in the northwest and southeast quadrants of the display
+    * Lots of white space == loss of visual opportunity
+    * Signal to the modeler that this vis may not work as well as another.
+* Good to add a line for y = x. 
+* Consider plotting residual (= actual - expected) on the y-axis
+    * Residual plots are broadly similar to ratio of actual and expected -> absolute vs. relative difference
+    * Upside of residuals is that they are easier to interpret within the context of a statistical model. We can also standardize them (scale by the sample variance) and make other adjustments to inspect how they compare to underyling statistical assumptions (mostly relevant for GLMs).
+* Boxplots may work better with categories on the x-axis. Reading differences left -> right may be easier than top -> bottom
+
+##
+
+```{r}
+readmissions %>% 
+  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>%
+  group_by(State) %>% 
+  summarise(
+    mean_predicted = mean(`Predicted Readmission Rate`, na.rm = TRUE)
+    , mean_expected = mean(`Expected Readmission Rate`, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(mean_expected, mean_predicted)) + 
+  geom_text(aes(label = State))
+```
+
+
 ## Good example - box plot of AvE ratio
 
 ```{r }
@@ -509,6 +535,57 @@ readmissions %>%
   labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+```
+
+##
+
+```{r }
+readmissions %>% 
+  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
+  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
+  ggplot(aes(State, ave)) + 
+  geom_boxplot(outlier.alpha = 0.2, alpha = 0.7) + 
+  coord_flip() + 
+  theme_soa() + 
+  ggtitle("Actual vs Expected Readmission Ratio") + 
+  ylab("Actual/Predicted") +
+  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
+        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
+  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+```
+
+##
+
+```{r }
+readmissions %>% 
+  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
+  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
+  ggplot(aes(State, ave)) + 
+  geom_boxplot(outlier.alpha = 0.2, alpha = 0.7) + 
+  theme_soa() + 
+  ggtitle("Actual vs Expected Readmission Ratio") + 
+  ylab("Actual/Predicted") +
+  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
+        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
+  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+```
+
+##
+
+```{r}
+readmissions %>% 
+  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
+  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
+  ggplot(aes(`Expected Readmission Rate`, `Predicted Readmission Rate`, color = State)) + 
+  geom_point() + 
+  theme_soa() + 
+  labs(
+    title = "Actual vs Expected Readmission Ratio"
+    , y = "Predicted"
+    , subtitle = "Based on Five Thirty Eight's Theme from the 'ggthemes' package"
+    , caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
+    NULL
+  # annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
 ```
 
 ## How to create graphics like this quickly
