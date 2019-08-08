@@ -105,11 +105,11 @@ These?
 ##
 
 <div class = 'left very-large-text'>
-9
+IX
 </div>
 
 <div class = 'right very-large-text'>
-B
+XI
 </div>
 
 ## {.center}
@@ -119,11 +119,11 @@ And these?
 ##
 
 <div class = 'left very-large-text'>
-IX
+9
 </div>
 
 <div class = 'right very-large-text'>
-XI
+B
 </div>
 
 ## {.center}
@@ -176,7 +176,14 @@ nueve
 
 ##  {.center}
 
+<div class = 'left'>
 Arabic or sanskrit are no more legitimate than any other representation of numbers.
+</div>
+
+<div class = 'right'>
+
+Be prepared to accept the idea that there are circumstances when geometric primitives may be understood _faster_.
+</div>
 
 ## This is actually _too much_ information
 
