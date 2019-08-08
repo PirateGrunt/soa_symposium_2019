@@ -516,7 +516,8 @@ readmissions %>%
     , mean_expected = mean(`Expected Readmission Rate`, na.rm = TRUE)
   ) %>% 
   ggplot(aes(mean_expected, mean_predicted)) + 
-  geom_text(aes(label = State))
+  geom_text(aes(label = State)) + 
+  my_minimal
 ```
 
 
