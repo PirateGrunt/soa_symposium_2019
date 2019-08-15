@@ -1,7 +1,7 @@
 ---
-title: Speed to Answer
+title: A picture speaks a thousand words
 author: "Sam Castillo and Brian A. Fannin"
-date: September XX, 2019
+date: September 19, 2019
 output: 
   revealjs::revealjs_presentation:
     center: false
@@ -28,6 +28,10 @@ library(vroom)
 library(ggthemes)
 library(png)
 library(grid)
+library(lubridate)
+library(scales)
+library(kableExtra)
+library(tidyquant)
 
 source("theme_soa.R")
 ```
@@ -60,8 +64,7 @@ my_args <- list(big.mark = ',', digits = 0, scientific = FALSE)
 
 * Visual perception uses graphical space more efficiently than tabular data
 * Statistical models are easier to refute visually
-* The only useful graphics are ones that people look at
-* Speed to production
+* A picture can speak a thousand words
 
 # Spatial efficiency
 
@@ -383,26 +386,223 @@ The rate for **territory** X must be increased by 10.4%.
 
 This year we expect to turn the corner on profitability.
 
-# Productivity
+# A picture can speak a thousand words
 
-1. Branding your data visualizations
-2. Producing graphs quickly
-3. 
+## A real life example: improving my diet {.center}
 
-## Data visualization communicates your brand
+<center>
 
-* Your customers and clients judge your product based on appearance
-* When writing a resume, professionalism matters
+![Nutrition Facts](images/nutrition_facts.png)
 
-## Default graphics
+</center>
+
+## The data {.center}
+
+![Instacart Orders](images/orders.PNG)
+
+
+## My daily calories for the last four months
 
 ```{r}
-iris %>% 
-  ggplot(aes(Sepal.Width, Sepal.Length, color = Species)) + 
-  geom_point()
+orders <- read_csv("data/orders.csv")
+orders_nutrition <- read_csv("data/orders_nutrition.csv")
+
+orders_nutrition %>% 
+  mutate(week = week(date)) %>% 
+  filter(month(date) < 8, month(date) > 2) %>% 
+  group_by(week) %>% 
+  summarise(calories = sum(calories)/7) %>% 
+  ggplot(aes(week, calories)) + 
+  geom_line() + 
+  theme_minimal() +
+  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) + 
+  xlab("Date") + 
+  ylab("Calories Per Day") + 
+  ggtitle("Daily Calories") + 
+  ylim(1000, 5000)
 ```
 
-## Professional graphics
+## Starting a 5 day/week gym routine
+
+```{r}
+orders_nutrition %>% 
+  mutate(week = week(date)) %>% 
+  filter(month(date) < 8, month(date) > 2) %>% 
+  group_by(week) %>% 
+  summarise(calories = sum(calories)/7) %>% 
+  ggplot(aes(week, calories)) + 
+  geom_line() + 
+  theme_minimal() +
+  xlab("Date") + 
+  ylab("Calories Per Day") + 
+  ggtitle("Daily Calories") + 
+  annotate("rect", xmin = 13, xmax = 17, ymin = 2000, ymax = 4000, alpha = 0.2, color = "red") + 
+  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) +
+  ylim(1000, 5000)
+```
+
+## After realizing that I was behind on studying and trying to catch up
+
+```{r}
+orders_nutrition %>% 
+  mutate(week = week(date)) %>% 
+  filter(month(date) < 8, month(date) > 2) %>% 
+  group_by(week) %>% 
+  summarise(calories = sum(calories)/7) %>% 
+  ggplot(aes(week, calories)) + 
+   geom_line() + 
+  theme_minimal() +
+  xlab("Date") + 
+  ylab("Calories Per Day") + 
+  ggtitle("Daily Calories") + 
+  annotate("rect", xmin = 20, xmax = 25, ymin = 2300, ymax = 3300, alpha = 0.2,color = "red") + 
+  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) +
+  ylim(1000, 5000)
+```
+
+## Traveling for a week
+
+```{r}
+orders_nutrition %>% 
+  mutate(week = week(date)) %>% 
+  filter(month(date) < 8, month(date) > 2) %>% 
+  group_by(week) %>% 
+  summarise(calories = sum(calories)/7) %>% 
+  ggplot(aes(week, calories)) + 
+  geom_line() + 
+  theme_minimal() +
+  xlab("Date") + 
+  ylab("Calories Per Day") + 
+  ggtitle("Daily Calories") + 
+  annotate("rect", xmin = 26, xmax = 30, ymin = 1300, ymax = 3000, alpha = 0.2,color = "red") + 
+  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) +
+  ylim(1000, 5000)
+```
+
+## The picture that speaks a thousand words
+
+```{r}
+measure_columns <- c("calories", "total_fat_g", "sat_fat_g", "trans_fat_g", "cholesterol_mg", "sodium_mg", "total_carbs_g", "dietary_fiber_g", "sugars_g", "protein_g")
+
+stats_by_day <- orders_nutrition %>% 
+  mutate(month = month(date)) %>% 
+  filter(month < 8, month > 2) %>% 
+  group_by(month) %>% 
+  summarise_at(measure_columns, ~sum(.x, na.rm = T)/unique(days_in_month(date))) %>% 
+  gather(stat, value, -month)
+
+
+stats_by_day %>% 
+  mutate(stat = case_when(
+    stat == "calories" ~ "Calories",
+    stat == "cholesterol_mg" ~ "Cholesteror (mg)",
+    stat == "dietary_fiber_g" ~ "Dietar Fiber (g)",
+    stat == "progein_g" ~ "Protein (g)",
+    stat == "sat_fat_g" ~ "Saturated Fat (g)",
+    stat == "sodium_mg" ~ "Sodium (mg)",
+    stat == "sugars_g" ~ "Sugars (g)",
+    stat == "total_carbs_g" ~ "Total Carbs (g)",
+    stat == "total_fat_g" ~ "Total Fat (g)",
+    stat == "trans_fat_g" ~ "Trans Fat (g)",
+    T ~ "NA"
+  )) %>% 
+  filter(stat != "NA") %>% 
+  ggplot(aes(month, value, color = stat)) + 
+  geom_line() + 
+  facet_wrap(vars(stat), scales = "free") + 
+  theme_minimal() + 
+  theme(legend.position = "none") + 
+  xlab("Month") + 
+  ylab("")
+```
+
+## The price of triple chocolate cake
+
+<div class = 'left'>
+
+```{r}
+orders_nutrition %>% 
+  filter(month(date) < 8) %>% 
+  mutate(month = week(date)) %>% 
+  group_by(month) %>% 
+  summarise(percent_sugar = sum(sugars_g*4)/sum(calories)) %>% 
+  ggplot(aes(month, percent_sugar)) + 
+  geom_line() + 
+  theme_minimal() + 
+  annotate("rect", xmin = 12, xmax = 16, ymin = 0.12, ymax = 0.2, alpha = 0.2,color = "red") +
+  scale_y_continuous(labels = percent) + 
+  xlab("Month") + 
+  ylab("Percent of Sugar of Calories") +
+  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) +
+  scale_y_continuous(labels = percent, limits = c(0, 0.3)) 
+
+```
+
+
+</div>
+
+<div class = 'right'>
+
+```{r fig.width=3}
+orders_nutrition %>% 
+  filter(name == "Village Bakery Triple Chocolate Creme Cake") %>% 
+  ungroup() %>% 
+  select(name, measure_columns) %>% 
+  gather(stat, value) %>% 
+   mutate(stat = case_when(
+    stat == "calories" ~ "Calories",
+    stat == "cholesterol_mg" ~ "Cholesteror (mg)",
+    stat == "dietary_fiber_g" ~ "Dietar Fiber (g)",
+    stat == "progein_g" ~ "Protein (g)",
+    stat == "sat_fat_g" ~ "Saturated Fat (g)",
+    stat == "sodium_mg" ~ "Sodium (mg)",
+    stat == "sugars_g" ~ "Sugars (g)",
+    stat == "total_carbs_g" ~ "Total Carbs (g)",
+    stat == "total_fat_g" ~ "Total Fat (g)",
+    stat == "trans_fat_g" ~ "Trans Fat (g)",
+    T ~ "NA"
+  )) %>% 
+  filter(stat != "NA") %>% 
+  mutate(value = comma(as.numeric(value)*10)) %>%  #multiply by servings per container)
+  rename(`Nutrition Facts` = stat) %>% 
+  kable("html", caption = "Triple Chocolate Cake") %>% kable_styling(bootstrap_options = c("condensed"))
+```
+
+
+</div>
+
+## The two use cases for data visualization
+
+* Exploratory analyis
+* Persuading an audience
+
+## Exploratory analysis requires speed and iteration {.center}
+
+![Hadley Wickham's Data Science Cycle](images/hadley_data_lifecycle.png)
+
+## Persuading an audience is a *very* different challenge
+
+*How to Win People to Your Way of Thinking - Dale Carnegie*
+
+1. You can't win an arguement
+2. Avoid making enemies - Never tell the the audience that they are wrong
+3. Put yourself in the other person's shoes
+4. Admit when you are wrong
+5. Be friendly
+6. Get the other person saying "yes, yes" immediately
+7. Let the other person see the pattern and come to the conclusion themselves
+
+
+## Data visualization communicates your brand {.center}
+
+```{r fig.width= 5, fig.height=5}
+iris %>% 
+  ggplot(aes(Sepal.Width, Sepal.Length, color = Species)) + 
+  geom_point() +
+  ggtitle("Default Graphics")
+```
+
+## Data visualization communicates your brand
 
 ```{r }
 img <- readPNG("images/soa_logo.png")
@@ -413,48 +613,51 @@ qplot(1:10, 1:10, geom = "blank") +
 
 gg <- iris %>% 
   ggplot(aes(Sepal.Width, Sepal.Length, color = Species)) + 
-  geom_point(size = 2) + 
-  theme_classic() + 
+  geom_point(size = 2) +
   labs("") + 
   theme(legend.position = "top") + 
-  xlab("X Label") + 
-  ylab("Y Label") +
-  theme_soa() + 
-  ggtitle("FivethirtyEight theme") + 
-  labs( subtitle = "Based on fivethirtyeight's theme \nfrom the 'ggthemes' package",
+  xlab("Width") + 
+  ylab("Length") +
+  theme_economist_white() + 
+  ggtitle("Branded Graphics") + 
+  labs( subtitle = "Based on the Economist's theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nUsed without Permission") + 
-   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) +
+  scale_color_tableau() + 
+    theme(plot.title = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0.5),
+        plot.caption = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0),
+        plot.subtitle = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0.5))
 
 gt <- ggplot_gtable(ggplot_build(gg))
 gt$layout$clip[gt$layout$name == "panel"] <- "off"
 grid.draw(gt)
 ```
 
-## What should actuaries look for?
-
-* Readability
-* Honesty - it should be representative of the underlying data
-* Reference ASOP
-
-## Bad - Difficult to read
-
-* What are the units?
-* What are the X and Y axis?
-* What is the data source?
+## Actuarial work should be easy to read
 
 ```{r fig.height=4}
 readmissions <- read_csv("data/hospital_readmission_rates.csv", na = "Not Available")
 
 readmissions %>% 
   ggplot(aes(`Number of Readmissions`)) + 
-  geom_histogram() +
-  ggtitle("Hospital Readmissions")
+  geom_density(fill = "grey") +
+  ggtitle("Hospital Readmissions") + 
+  theme_bw()
 ```
 
-## Good example - easy to read
+* What are the y-axis "density" units?  
+* How can this be translated into english?
 
-* There are just over 2,000 hospitals with between 30 and 50 readmissions
-* There are 4,000 hospitals with between 10 and 30 
+## Actuarial work should be easy to read
 
 ```{r fig.height=4}
 readmissions %>% 
@@ -468,24 +671,31 @@ readmissions %>%
   labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
    annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) + 
-  scale_x_continuous(breaks = seq(10, 300, 20),minor_breaks = seq(0, 300, 10), limits = c(0, 300))
+  scale_x_continuous(breaks = seq(10, 300, 20),minor_breaks = seq(0, 300, 10), limits = c(0, 300)) + 
+  scale_y_continuous(labels = comma) +
+  theme(plot.title = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0.5),
+        plot.caption = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0),
+        plot.subtitle = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0.5))
 ```
 
-## Bad example - Excel mixed type graph
+* In english: "There are just over 2,000 hospitals with between 30 and 50 readmissions"
 
-* Which axis is the Actual and which is the Predicted?  
-* The blue bars take up more visual space than the lines, but both units are equally important
-* The lines do not even make sense because there is no continuous scale (States are not related to each other)
-
-![*Excel Mixed Type Graph*](images/excel_pivot_1.PNG)
-
-## Bad example - Excel mixed type graph
+## Graphs should be unambiguous
 
 <div class = 'left'>
 
 * Which axis is the Actual and which is the Predicted?  
 * The blue bars take up more visual space than the lines, but both units are equally important
-* The lines do not even make sense because there is no continuous scale (States are not related to each other)
+* X-axis ontinuous scale does not make sense
 
 </div>
 
@@ -495,18 +705,7 @@ readmissions %>%
 
 </div>
 
-## Actual, expected -> x, y
-
-* When the model fits well lots of empty space in the northwest and southeast quadrants of the display
-    * Lots of white space == loss of visual opportunity
-    * Signal to the modeler that this vis may not work as well as another.
-* Good to add a line for y = x. 
-* Consider plotting residual (= actual - expected) on the y-axis
-    * Residual plots are broadly similar to ratio of actual and expected -> absolute vs. relative difference
-    * Upside of residuals is that they are easier to interpret within the context of a statistical model. We can also standardize them (scale by the sample variance) and make other adjustments to inspect how they compare to underyling statistical assumptions (mostly relevant for GLMs).
-* Boxplots may work better with categories on the x-axis. Reading differences left -> right may be easier than top -> bottom
-
-##
+## A step in the right direction
 
 ```{r}
 readmissions %>% 
@@ -517,29 +716,12 @@ readmissions %>%
     , mean_expected = mean(`Expected Readmission Rate`, na.rm = TRUE)
   ) %>% 
   ggplot(aes(mean_expected, mean_predicted)) + 
-  geom_text(aes(label = State)) + 
+  geom_text(aes(label = State,label.size = 2)) + 
   my_minimal
 ```
 
 
-## Good example - box plot of AvE ratio
-
-```{r }
-readmissions %>% 
-  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
-  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
-  ggplot(aes(State, ave, fill = State)) + 
-  geom_boxplot(outlier.alpha = 0.2, alpha = 0.7) + 
-  coord_flip() + 
-  theme_soa() + 
-  ggtitle("Actual vs Expected Readmission Ratio") + 
-  ylab("Actual/Predicted") +
-  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
-        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
-```
-
-##
+## Uncertainty should be shown
 
 ```{r }
 readmissions %>% 
@@ -553,58 +735,34 @@ readmissions %>%
   ylab("Actual/Predicted") +
   labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
+  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) + 
+    theme(plot.title = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 12, 
+                     hjust = 0),
+        plot.caption = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 10, 
+                     hjust = 1),
+        plot.subtitle = element_text(family = "Verdana",
+                     colour = "black", 
+                     size = 10, 
+                     hjust = 0))
 ```
 
-##
 
-```{r }
-readmissions %>% 
-  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
-  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
-  ggplot(aes(State, ave)) + 
-  geom_boxplot(outlier.alpha = 0.2, alpha = 0.7) + 
-  theme_soa() + 
-  ggtitle("Actual vs Expected Readmission Ratio") + 
-  ylab("Actual/Predicted") +
-  labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
-        caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
-```
 
-##
+## Summary
 
-```{r}
-readmissions %>% 
-  filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
-  mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
-  ggplot(aes(`Expected Readmission Rate`, `Predicted Readmission Rate`, color = State)) + 
-  geom_point() + 
-  theme_soa() + 
-  labs(
-    title = "Actual vs Expected Readmission Ratio"
-    , y = "Predicted"
-    , subtitle = "Based on Five Thirty Eight's Theme from the 'ggthemes' package"
-    , caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-    NULL
-  # annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) 
-```
+** For exploratory analysis **
 
-## How to create graphics like this quickly
+1)  Understand the story behind the data
+3)  Focus on speed and flexibility (Python or R are a must)
 
-Creating a graph is an assembly line
+** For persuading an audience, publishing, or selling your ideas**
 
-1.  Get data in the right format
-2.  Explore an idea - Discovery is a spontaneous process
-3.  Plot a graph
-4.  Put it in front of people
-
-# Conclusion
-
-## 
-
-* Bullet 1
-* Bullet 2
+1) Build templates
+2) Strive for simplicity and professionalism
 
 ## {.center}
 
