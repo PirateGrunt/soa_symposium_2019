@@ -1,5 +1,5 @@
 ---
-title: A picture speaks a thousand words
+title: Every picture tells a story ... don't it?
 author: "Sam Castillo and Brian A. Fannin"
 date: September 19, 2019
 output: 
@@ -60,13 +60,12 @@ my_percent <- function(x) {
 my_args <- list(big.mark = ',', digits = 0, scientific = FALSE)
 ```
 
-##
+## What we'll talk about
 
-* Visual perception uses graphical space more efficiently than tabular data
-* Statistical models are easier to refute visually
-* A picture can speak a thousand words
+* Communication efficiency
+* Every picture tells a story
 
-# Spatial efficiency
+# Communication efficiency
 
 ## {data-background=white}
 
@@ -357,10 +356,11 @@ Summary statistics are _always_ a reduction of information.
 
 Visualization presents (almost) _all_ of the data. The reductions are made with our eyes.
 
-## {.center}
+## Potential complaint 
 
-- Potential complaint: 
-- Focus on visual design places undue emphasis on superfluous characteristics like color, font, etc.
+<div class = 'center'>
+Focus on visual design places undue emphasis on superfluous characteristics like color, font, etc.
+</div>
 
 ## {.center}
 
@@ -368,7 +368,7 @@ What's the most important word in the text which follows?
 
 ##
 
-The rate for territory X must be **increased** by 10.4%.
+The rate for territory X must be **<u>increased</u>** by 10.4%.
 
 ## {.center}
 
@@ -376,15 +376,19 @@ And this one?
 
 ##
 
-The rate for **territory** X must be increased by 10.4%.
+The rate for **<u>territory</u>** X must be increased by 10.4%.
 
 ## {.center}
 
 "Inessential" matters. Emphasis is an element of communication and therefore comprehension.
 
+## {.center}
+
+Are you ready to buy stock in this company?
+
 ## {.center .unprofessional}
 
-This year we expect to turn the corner on profitability.
+This year we plan top build on last year's renewed profitability.
 
 # A picture can speak a thousand words
 
@@ -754,12 +758,12 @@ readmissions %>%
 
 ## Summary
 
-** For exploratory analysis **
+**For exploratory analysis**
 
 1)  Understand the story behind the data
 3)  Focus on speed and flexibility (Python or R are a must)
 
-** For persuading an audience, publishing, or selling your ideas**
+**For persuading an audience, publishing, or selling your ideas**
 
 1) Build templates
 2) Strive for simplicity and professionalism
