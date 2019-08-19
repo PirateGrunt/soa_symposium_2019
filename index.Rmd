@@ -60,6 +60,12 @@ my_percent <- function(x) {
 my_args <- list(big.mark = ',', digits = 0, scientific = FALSE)
 ```
 
+## Where to find this
+
+This presentation may be found at: https://pirategrunt.com/soa_symposium_2019/
+
+Code to produce the examples and slides: https://github.com/PirateGrunt/soa_symposium_2019
+
 ## What we'll talk about
 
 * Communication efficiency
@@ -754,8 +760,6 @@ readmissions %>%
                      hjust = 0))
 ```
 
-
-
 ## Summary
 
 **For exploratory analysis**
@@ -774,6 +778,6 @@ Thank you!
 
 ## Where to find this
 
-This presentation may be found at: http://pirategrunt.com/soa_symposium_2019/
+This presentation may be found at: https://pirategrunt.com/soa_symposium_2019/
 
 Code to produce the examples and slides: https://github.com/PirateGrunt/soa_symposium_2019
