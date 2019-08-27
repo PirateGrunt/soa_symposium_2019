@@ -170,6 +170,12 @@ tibble(
 
 ## {.center}
 
+For statisticians there always have to be comparisons; numbers on their own are not enough. 
+
+- Gelman and Unwin
+
+## {.center}
+
 nine
 
 9
