@@ -152,6 +152,20 @@ These?
 
 ## {.center}
 
+These?
+
+##
+
+<div class = 'left small-text'>
+11
+</div>
+
+<div class = 'right very-large-text'>
+9
+</div>
+
+## {.center}
+
 How about these?
 
 ##
@@ -173,6 +187,48 @@ tibble(
 For statisticians there always have to be comparisons; numbers on their own are not enough. 
 
 - Gelman and Unwin
+
+## {.center}
+
+These two?
+
+##
+
+<div class = 'left'>
+999999999
+</div>
+
+<div class = 'right'>
+99999999999
+</div>
+
+## {.center}
+
+These two?
+
+##
+
+<div class = 'left'>
+999,999,999
+</div>
+
+<div class = 'right'>
+99,999,999,999
+</div>
+
+##
+
+```{r}
+tibble(
+    val = c('left', 'right')
+  , size = c(99999999999, 999999999)
+) %>% 
+  ggplot(
+    aes(val, size)
+  ) + 
+  geom_bar(position = 'dodge', stat = 'identity') + 
+  my_void
+```
 
 ## {.center}
 
