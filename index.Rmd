@@ -218,6 +218,10 @@ These two?
 99,999,999,999
 </div>
 
+## {.center}
+
+And these?
+
 ##
 
 ```{r}
