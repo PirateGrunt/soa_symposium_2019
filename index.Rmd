@@ -71,10 +71,10 @@ Code to produce the examples and slides: https://github.com/PirateGrunt/soa_symp
 
 ## What we'll talk about
 
-* Communication efficiency
+* Semiotics
 * Practical advice for data visualization
 
-# Communication efficiency
+# Semiotics
 
 ## {data-background=white}
 
