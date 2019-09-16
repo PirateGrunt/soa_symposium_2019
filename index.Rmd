@@ -468,7 +468,7 @@ This year we plan top build on last year's renewed profitability.
 <center>
 
 ```{r fig.align= "center"}
-image_read('images/nutrition_facts.PNG') %>% image_trim() %>% image_scale("1000")
+image_read('images/nutrition_facts.png') %>% image_trim() %>% image_scale("1000")
 ```
 
 </center>
