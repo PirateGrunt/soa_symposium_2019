@@ -32,7 +32,9 @@ library(lubridate)
 library(scales)
 library(kableExtra)
 library(gganimate)
-
+library(magick)
+library(colortools)
+library(ggpubr)
 
 source("theme_soa.R")
 ```
@@ -70,7 +72,7 @@ Code to produce the examples and slides: https://github.com/PirateGrunt/soa_symp
 ## What we'll talk about
 
 * Communication efficiency
-* Every picture tells a story
+* Practical advice for data visualization
 
 # Communication efficiency
 
@@ -459,23 +461,25 @@ Are you ready to buy stock in this company?
 
 This year we plan top build on last year's renewed profitability.
 
-# A picture can speak a thousand words
+# Practical Advice for Data Visualization
 
 ## A real life example: improving my diet
 
-```{r}
-knitr::include_graphics('images/nutrition_facts.png')
+<center>
+
+```{r fig.align= "center"}
+image_read('images/nutrition_facts.PNG') %>% image_trim() %>% image_scale("1000")
 ```
 
+</center>
 
-
-## Speed test: which is healthier, A or B?
+## Speed test: which is healthier, left or right?
 
 
 <div class = 'left'>
 
-```{r fig.width=4, fig.height=7}
-knitr::include_graphics('images/wheaties.PNG')
+```{r fig.align= "center"}
+image_read('images/wheaties.PNG') %>% image_trim() %>% image_scale("800")
 ```
 
 </div>
@@ -483,23 +487,23 @@ knitr::include_graphics('images/wheaties.PNG')
 <div class = 'right'>
 
 ```{r fig.width=4, fig.height=7}
-knitr::include_graphics('images/frosted_flakes.PNG')
+image_read('images/frosted_flakes.PNG') %>% image_trim() %>% image_scale("800")
 ```
 
 </div>
 
 
-## Weaknesses
+## Limations of the nutrition label
 
 - Serving sizes are inconsistent
 - Converting units requires a calculator
 - Each food has it's own label
 - Data collection is slow
 
-## A better data source 
+## Instacart orders
 
-```{r}
-knitr::include_graphics('images/orders.PNG')
+```{r fig.align="center"}
+image_read('images/orders.PNG') %>% image_trim() %>% image_scale("1200")
 ```
 
 ## My daily calories for the last four months
@@ -515,13 +519,14 @@ p <- orders_nutrition %>%
   summarise(calories = sum(calories)/7) %>% 
   ggplot(aes(week, calories)) + 
   geom_line() + 
+  geom_point() + 
   theme_minimal() +
   scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) + 
   xlab("Date") + 
   ylab("Calories Per Day") + 
   ggtitle("Daily Calories") + 
   ylim(1000, 5000) + 
-  transition_reveal(week)
+  transition_reveal(week) 
 
 animate(p,
         duration = 60, # 32 weeks * 4 sec/week = 120 seconds
@@ -529,7 +534,23 @@ animate(p,
         )
 ```
 
-## The picture that speaks a thousand words
+## Setting a daily benchmark
+
+| Measure           | Value|
+|-------------------|------|
+| Calories          | 3000 | 
+| Protein (g)       | 125  |   
+| Total Fat (g)     | 150  |  
+| Saturated Fat (g) | 0    |   
+| Trans Fat (g)     | 0    |   
+| Cholesterol (mg)  | 600  |   
+| Sodium (mg)       | 200  |   
+| Carbs (g)         | 600  |  
+| Dietary Fiber (g) | 25   |  
+| Sugars (g)        | 40   | 
+
+
+## Percent of daily benchmark
 
 ```{r}
 measure_columns <- c("calories", "total_fat_g", "sat_fat_g", "trans_fat_g", "cholesterol_mg", "sodium_mg", "total_carbs_g", "dietary_fiber_g", "sugars_g", "protein_g")
@@ -548,7 +569,6 @@ nutrition_benchmarks <- tibble(
                 125 #protein... 175 - 50 from protein shake
                 )
 )
-
 ```
 
 ```{r fig.width=10}
@@ -596,73 +616,82 @@ animate(p,
         )
 ```
 
-## The price of triple chocolate cake
-
-<div class = 'left'>
+## Percent of daily benchmark
 
 ```{r}
 orders_nutrition %>% 
-  filter(month(date) < 8) %>% 
-  mutate(month = week(date)) %>% 
+  select(date, measure_columns) %>% 
+  mutate(month = month(date)) %>% 
+  filter(month < 8, month > 2) %>% 
   group_by(month) %>% 
-  summarise(percent_sugar = sum(sugars_g*4)/sum(calories)) %>% 
-  ggplot(aes(month, percent_sugar)) + 
-  geom_line() + 
+  mutate_at(measure_columns, ~sum(.x, na.rm = T)/unique(days_in_month(date))) %>% 
+  gather(stat, value, -month, -date) %>% 
+  filter(month >2, stat != "sat_fat_g", stat != "trans_fat_g", stat != "total_carbs_g") %>% 
+  left_join(nutrition_benchmarks, by = "stat") %>% 
+  mutate(percent = ifelse(value/benchmark<2.4, value/benchmark, 2.4),
+         stat = case_when(
+    stat == "calories" ~ "Calories",
+    stat == "cholesterol_mg" ~ "Cholesterol",
+    stat == "dietary_fiber_g" ~ "Dietar Fiber",
+    stat == "protein_g" ~ "Protein",
+    stat == "sat_fat_g" ~ "Saturated Fat",
+    stat == "sodium_mg" ~ "Sodium",
+    stat == "sugars_g" ~ "Sugars",
+    stat == "total_carbs_g" ~ "Total Carbs",
+    stat == "total_fat_g" ~ "Total Fat",
+    stat == "trans_fat_g" ~ "Trans Fat",
+    T ~ "NA"
+  ) %>% 
+    fct_relevel(c(
+      "Calories","Protein (g)","Sugars (g)","Total Carbs (g)","Cholesterol (mg)","Dietar Fiber (g)","Saturated Fat (g)","Sodium (mg)","Total Fat (g)","Trans Fat (g)", "NA"))
+  ) %>% 
+  mutate(stat = fct_rev(stat)) %>% 
+  ggplot(aes(date, percent, color = stat)) + 
+  geom_smooth(se = F, span = 0.4) + 
+  scale_y_continuous(labels = percent, limits = c(0, 2.5)) +
   theme_minimal() + 
-  annotate("rect", xmin = 12, xmax = 16, ymin = 0.12, ymax = 0.2, alpha = 0.2,color = "red") +
-  scale_y_continuous(labels = percent) + 
-  xlab("Month") + 
-  ylab("Percent of Sugar of Calories") +
-  scale_x_continuous(labels = seq(ymd("2019-03-01"), ymd("2019-07-31"), by = "month")) +
-  scale_y_continuous(labels = percent, limits = c(0, 0.3)) 
-
+  theme(legend.position="top") +
+  geom_hline(yintercept = 1.00, color = "black", size = 1.3, alpha = 0.5) +
+  ylab("% of Daily Value") + 
+  xlab("Date")
 ```
 
+
+## 
+
+<div class = 'left'>
+
+<font size="12" color="#B8F7FF" face="bold">Exploration</font>
+
+* Speed
+* Iteration
+* Agility
+* Many dimensions
+* Tidy data
+* R and Python
 
 </div>
 
 <div class = 'right'>
 
-```{r fig.width=3}
-orders_nutrition %>% 
-  filter(name == "Village Bakery Triple Chocolate Creme Cake") %>% 
-  ungroup() %>% 
-  select(name, measure_columns) %>% 
-  gather(stat, value) %>% 
-   mutate(stat = case_when(
-    stat == "calories" ~ "Calories",
-    stat == "cholesterol_mg" ~ "Cholesterol (mg)",
-    stat == "dietary_fiber_g" ~ "Dietar Fiber (g)",
-    stat == "progein_g" ~ "Protein (g)",
-    stat == "sat_fat_g" ~ "Saturated Fat (g)",
-    stat == "sodium_mg" ~ "Sodium (mg)",
-    stat == "sugars_g" ~ "Sugars (g)",
-    stat == "total_carbs_g" ~ "Total Carbs (g)",
-    stat == "total_fat_g" ~ "Total Fat (g)",
-    stat == "trans_fat_g" ~ "Trans Fat (g)",
-    T ~ "NA"
-  )) %>% 
-  filter(stat != "NA") %>% 
-  mutate(value = comma(as.numeric(value)*10)) %>%  #multiply by servings per container)
-  rename(`Nutrition Facts` = stat) %>% 
-  kable("html", caption = "Triple Chocolate Cake") %>% kable_styling(bootstrap_options = c("condensed"))
-```
+<font size="12" color="FFBCB9"face="bold">Communication</font>
 
+* Simplicity
+* Professionalism 
+* Consistency
+* PowerPoint, Tableau, PowerBI, D3.js
 
 </div>
 
-## The two use cases for data visualization
-
-* Exploratory analyis
-* Persuading an audience
-
-## Exploratory analysis requires speed and iteration
+## Visualization is a process
 
 ```{r}
-knitr::include_graphics('images/hadley_data_lifecycle.png')
+image_read('images/hadley_data_lifecycle.png') %>% image_trim() %>% image_scale("1400")
 ```
 
-## Data visualization communicates your brand
+<font size="2">*R for Data Science*, Hadley Wickham: https://r4ds.had.co.nz/</font>
+
+## Default template
 
 ```{r fig.width= 5, fig.height=5}
 iris %>% 
@@ -673,7 +702,7 @@ iris %>%
   theme(text=element_text(size=16,  family="Calibri"))
 ```
 
-## Data visualization communicates your brand
+## With a custom template
 
 ```{r }
 img <- readPNG("images/soa_logo.png")
@@ -716,15 +745,12 @@ gt$layout$clip[gt$layout$name == "panel"] <- "off"
 grid.draw(gt)
 ```
 
-## Automation is the key to speed
+## Do Not Repeat Yourself (DRY)
 
-```{r echo = T, eval = F}
-library(custom_library)
+Import *then* transform *then* visualize *then* add a custom theme
 
-data %>% 
-  ggplot(x, y) + 
-  geom_point() + 
-  my_custom_theme()
+```{r fig.align="center"}
+image_read('images/code.PNG') %>% image_trim() %>% image_scale("1200")
 ```
 
 
@@ -744,7 +770,7 @@ readmissions %>%
 * What are the y-axis "density" units?  
 * How can this be translated into english?
 
-## The best graphs are easy to read
+## Example: Hospital readmissions
 
 ```{r fig.height=4}
 readmissions %>% 
@@ -757,9 +783,8 @@ readmissions %>%
   ylab("Number of Hospitals") + 
   labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-   annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) + 
   scale_x_continuous(breaks = seq(10, 300, 20),minor_breaks = seq(0, 300, 10), limits = c(0, 300)) + 
-  scale_y_continuous(labels = comma) +
+  scale_y_continuous(labels = scales::comma) +
   theme(plot.title = element_text(family = "Verdana",
                      colour = "black", 
                      size = 14, 
@@ -803,14 +828,17 @@ readmissions %>%
     , mean_expected = mean(`Expected Readmission Rate`, na.rm = TRUE)
   ) %>% 
   ggplot(aes(mean_expected, mean_predicted)) + 
-  geom_text(aes(label = State,label.size = 2)) + 
-  my_minimal
+  geom_label(aes(label = State)) +
+  theme_bw() + 
+  xlab("Actual Readmissions") + 
+  ylab("Expected Readmissions") + 
+  scale_x_continuous(labels = seq(15, 16.5, 0.5), breaks = seq(15, 16.5, 0.5), limits = c(15, 16.5)) + 
+  scale_y_continuous(labels = seq(15, 16.5, 0.5), breaks = seq(15, 16.5, 0.5), limits = c(15, 16.5))
 ```
-
 
 ## Uncertainty should be shown
 
-```{r }
+```{r}
 readmissions %>% 
   filter(State %in% c("IL", "MA", "NC", "NY", "PA")) %>% 
   mutate(ave = `Expected Readmission Rate`/`Predicted Readmission Rate`) %>% 
@@ -822,7 +850,6 @@ readmissions %>%
   ylab("Actual/Predicted") +
   labs( subtitle = "Based on Five Thirty Eight's Theme \nfrom the 'ggthemes' package",
         caption = "Copyright 2019 YourBrandName \nData Source: HealthData.gov") + 
-  annotation_custom(logo, ymin = 8.5, ymax = 9, xmin = 4, xmax = 4.5) + 
     theme(plot.title = element_text(family = "Verdana",
                      colour = "black", 
                      size = 12, 
@@ -837,30 +864,79 @@ readmissions %>%
                      hjust = 0))
 ```
 
-## Persuading an audience is a *very* different challenge
+## Color wheels are helpful
+
+```{r}
+wheel("darkblue", num = 12)
+```
+
+## Complimentary colors are opposites on the color wheel
+
+```{r}
+complementary("steelblue")
+```
+
+## Use the colors specific to your brand
+
+```{r}
+ggplot(mpg, aes(class)) + geom_bar(aes(fill = drv)) + scale_fill_manual(values = c("#ff80c3", "#7affb6", "#695d49"))
+```
+
+## Company website
+
+```{r}
+image_read('images/intelliscript.PNG') %>% image_trim() %>% image_scale("1400")
+```
+
+## R colors
+
+```{r}
+intelliscript_theme <- function (base_size = 9, base_family = "", base_line_size = base_size/24, 
+    base_rect_size = base_size/24) 
+{
+    theme_bw(base_size = base_size, base_family = base_family, 
+        base_line_size = base_line_size, base_rect_size = base_rect_size) %+replace% 
+        theme(plot.title = element_text(size = 18, face = "bold", 
+            color = "#08315C" , hjust = 0), 
+            plot.subtitle = element_text(size = 12, color = "#455f72", 
+                hjust = 0), plot.caption = element_text(size = 12, 
+                color = "#455f72", hjust = 1), 
+            legend.position = "top", legend.text = element_text(size = 9, 
+                color = "#08315C" ), legend.title = element_text(size = 9, 
+                color = "#08315C" ), axis.text.x = element_text(size = 9, 
+                color = "#08315C" ), axis.text.y = element_text(size = 9, 
+                color = "#08315C" ), axis.title = element_text(size = 9, 
+                color = "#08315C" ), axis.ticks = element_blank(), 
+            legend.background = element_blank(), legend.key = element_blank(), 
+            panel.background = element_blank(), panel.border = element_blank(), 
+            strip.background = element_blank(), plot.background = element_blank(), 
+            complete = TRUE, validate = TRUE)
+}
+theme_set(intelliscript_theme())
+p1 <- ggplot(mpg, aes(class)) + geom_bar(aes(fill = drv)) + scale_fill_manual(values = c("#88ddfc", "#08315C", "#D22E2E")) + coord_flip()
+
+p2 <- ggplot(diamonds, aes(price, fill = cut)) +
+  geom_histogram(binwidth = 500) + scale_fill_manual(values = c("#08315C","#0465f7", "#0281E4","#88ddfc","#20C375","#6cdd98")) 
+
+ggarrange(p1,p2)
+```
+
+## Build psychological acumen 
 
 *How to Win Friends and Influence People - Dale Carnegie*
 
-1. You can't win an arguement
-2. Avoid making enemies - Never tell the the audience that they are wrong
+1. Realize that you can't 'win' an arguement
+2. Let the other person see the pattern and come to the conclusion themselves
 3. Put yourself in the other person's shoes
-4. Admit when you are wrong
+4. Use familiar language
 5. Be friendly
 6. Get the other person saying "yes, yes" immediately
-7. Let the other person see the pattern and come to the conclusion themselves
 
+## Three-point summary
 
-## Summary
-
-**For exploratory analysis**
-
-1)  Understand the story behind the data
-3)  Focus on speed and flexibility 
-
-**For persuading an audience, publishing, or selling your ideas**
-
-1) Build templates
-2) Strive for simplicity and professionalism
+1.  For exploration, focus on speed, iteration, and flexibility
+2.  For communication, focus on professionalism, simplicity, and consistency
+3.  Realize that data viz is just like any other mode of communication such as speech, text, and body language
 
 ## {.center}
 
