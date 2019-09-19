@@ -84,6 +84,12 @@ Code to produce the examples and slides: https://github.com/PirateGrunt/soa_symp
 
 ## {.center}
 
+For statisticians there always have to be comparisons; numbers on their own are not enough. 
+
+- Gelman and Unwin
+
+## {.center}
+
 Which of these two numbers is larger? 
 
 ##
@@ -186,13 +192,34 @@ tibble(
 
 ## {.center}
 
-For statisticians there always have to be comparisons; numbers on their own are not enough. 
+nine
 
-- Gelman and Unwin
+9
+
+neun
+
+1001
+
+九
+
+IX
+
+nueve
+
+##  {.center}
+
+<div class = 'left'>
+Arabic or sanskrit are no more legitimate than any other representation of numbers.
+</div>
+
+<div class = 'right'>
+
+Be prepared to accept the idea that there are circumstances when geometric primitives may be understood _faster_.
+</div>
 
 ## {.center}
 
-These two?
+Another comparison
 
 ##
 
@@ -220,7 +247,7 @@ These two?
 
 ## {.center}
 
-And these?
+What does an order of magnitude look like?
 
 ##
 
@@ -235,33 +262,6 @@ tibble(
   geom_bar(position = 'dodge', stat = 'identity') + 
   my_void
 ```
-
-## {.center}
-
-nine
-
-9
-
-neun
-
-1001
-
-九
-
-IX
-
-nueve
-
-##  {.center}
-
-<div class = 'left'>
-Arabic or sanskrit are no more legitimate than any other representation of numbers.
-</div>
-
-<div class = 'right'>
-
-Be prepared to accept the idea that there are circumstances when geometric primitives may be understood _faster_.
-</div>
 
 ## This is actually _too much_ information
 
@@ -451,7 +451,7 @@ And this one?
 
 ##
 
-The rate for **<u>territory</u>** X must be increased by 10.4%.
+The **<u>rate</u>** for territory X must be increased by 10.4%.
 
 ## {.center}
 
@@ -463,7 +463,7 @@ Are you ready to buy stock in this company?
 
 ## {.center .unprofessional}
 
-This year we plan top build on last year's renewed profitability.
+This year we plan to build on last year's renewed profitability.
 
 # Practical Advice for Data Visualization
 
