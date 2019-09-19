@@ -774,7 +774,7 @@ readmissions %>%
 * What are the y-axis "density" units?  
 * How can this be translated into english?
 
-## Example: Hospital readmissions
+## The best graphs are easy to read
 
 ```{r fig.height=4}
 readmissions %>% 
@@ -807,19 +807,10 @@ readmissions %>%
 
 ## Graphs should be unambiguous
 
-<div class = 'left'>
 
-* Which axis is the Actual and which is the Predicted?  
-* The blue bars take up more visual space than the lines, but both units are equally important
-* X-axis ontinuous scale does not make sense
-
-</div>
-
-<div class = 'right'>
-
-![*Excel Mixed Type Graph*](images/excel_pivot_1.PNG)
-
-</div>
+```{r  fig.align="center"}
+image_read('images/excel_pivot_1.PNG') %>% image_trim() %>% image_scale("1400")
+```
 
 ## A step in the right direction
 
@@ -833,6 +824,7 @@ readmissions %>%
   ) %>% 
   ggplot(aes(mean_expected, mean_predicted)) + 
   geom_label(aes(label = State)) +
+  geom_abline(slope = 1, intercept=0, alpha = 0.5, color = "red") + 
   theme_bw() + 
   xlab("Actual Readmissions") + 
   ylab("Expected Readmissions") + 
@@ -840,7 +832,7 @@ readmissions %>%
   scale_y_continuous(labels = seq(15, 16.5, 0.5), breaks = seq(15, 16.5, 0.5), limits = c(15, 16.5))
 ```
 
-## Uncertainty should be shown
+## Showing uncertainty
 
 ```{r}
 readmissions %>% 
@@ -871,7 +863,7 @@ readmissions %>%
 ## Color wheels are helpful
 
 ```{r}
-wheel("darkblue", num = 12)
+wheel("blue", num = 12)
 ```
 
 ## Complimentary colors are opposites on the color wheel
@@ -925,7 +917,7 @@ p2 <- ggplot(diamonds, aes(price, fill = cut)) +
 ggarrange(p1,p2)
 ```
 
-## Build psychological acumen 
+## Emotional intelligence matters
 
 *How to Win Friends and Influence People - Dale Carnegie*
 
